@@ -12,6 +12,8 @@ using namespace path;
 using namespace configor;
 using namespace inicpp;
 
+string self_path, self_name;
+
 class Task {
 public:
 	string path;
@@ -120,6 +122,9 @@ inline void debug(const Config &config) {
 }
 
 void Task::run() {
+	string target, trash;
+	pathSplit(path, target, trash);
+	chdir(target.c_str());
 	vector< future<void> > pool;
 	for (size_t i = 1; i <= trigger_count; i++) { // PTSD
 		pool.push_back(async(launch::async, executefile, path));
@@ -128,11 +133,14 @@ void Task::run() {
 	}
 	for (future<void> &fut : pool)
 		fut.wait();
+	chdir(self_path.c_str());
 }
 void process(const Config &config) {
 	clock_t time_rec, time_now;
 	time_rec = time_now = 0;
 	map<string, bool> exist_rec;
+	for (Task subtask : config.task)
+		exist_rec[subtask.path] = false;
 	while (true) {
 		time_rec = time_now;
 		time_now = clock();
@@ -149,6 +157,7 @@ void process(const Config &config) {
 }
 
 int main(int n_, char** config_path_) {
+	pathSplit(_pgmptr, self_path, self_name);
 	HWND console = FindWindowA(nullptr, _pgmptr);
 	IniManager ini_config("config.ini");
 
