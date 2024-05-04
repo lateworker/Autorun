@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 #include <synchapi.h>
-#include <windef.h>
-#include <winuser.h>
+#include <windows.h>
 #include "include/configor/json.hpp"
 #include "include/inicpp.hpp"
 #include "include/path.h"
@@ -155,10 +154,9 @@ void process(const Config &config) {
 		Sleep(config.interval_time);
 	}
 }
-
 int main(int n_, char** config_path_) {
 	pathSplit(_pgmptr, self_path, self_name);
-	HWND console = FindWindowA(nullptr, _pgmptr);
+	HWND console = GetConsoleWindow();
 	IniManager ini_config("config.ini");
 
 	if (ini_config["Autorun"]["hide_console_window"] == "1")
