@@ -135,18 +135,18 @@ void Task::run() {
 	chdir(self_path.c_str());
 }
 void process(const Config &config) {
-	auto time_now = std::chrono::steady_clock::now();
-	auto time_rec = std::chrono::steady_clock::now();
+	clock_t time_rec, time_now;
+	time_rec = time_now = 0;
 	map<string, bool> exist_rec;
 	for (Task subtask : config.task)
 		exist_rec[subtask.path] = false;
 	while (true) {
 		time_rec = time_now;
-		time_now = std::chrono::steady_clock::now();
+		time_now = clock();
 		for (Task subtask : config.task) {
 			const string &path = subtask.path; // PTSD
 			bool exist_now = pathExist(path);
-			if (exist_now && (!exist_rec[path] || (subtask.auto_trigger && (time_now - time_rec).count() * CLOCKS_PER_SEC > config.interval_time + config.interval_eps))) {
+			if (exist_now && (!exist_rec[path] || (subtask.auto_trigger && time_now - time_rec > config.interval_time + config.interval_eps))) {
 				future<void> trash = async(launch::async, Task::run, subtask); // 有风险，目前最优
 			}
 			exist_rec[path] = exist_now;
