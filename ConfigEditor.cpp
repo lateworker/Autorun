@@ -9,6 +9,8 @@ using namespace path;
 using namespace configor;
 using namespace inicpp;
 
+string self_path, self_name;
+
 class Task {
 public:
 	string path;
@@ -143,10 +145,10 @@ void paintMenu(Menu &menu, const Task &subtask, const short &delt, const short &
 	menu.push(Button({4, (short)(delt + 2)}, "触发间隔：" + to_string(subtask.trigger_interval) + "ms", "2" + to_string(i), ButtonColor(consoleColor.brightCyan), true, true));
 	menu.push(Button({4, (short)(delt + 3)}, "唤醒触发：" + (subtask.auto_trigger ? (string)"允许" : (string)"禁止"), "3" + to_string(i), ButtonColor(consoleColor.brightCyan), true, true));
 }
-void paintMenu(Menu &menu, const Config &config) {
+void paintMenu(Menu &menu, const Config &config, const string &config_path) {
 	menu.clear();
 
-	menu.push(Button({0, 0}, "配置文件修改器", "title", ButtonColor(consoleColor.White), true, true));
+	menu.push(Button({0, 0}, "配置文件修改器 - " + config_path, "title", ButtonColor(consoleColor.White), true, true));
 	menu.push(Button({0, 1}, "撤销上次修改", "back", ButtonColor(consoleColor.brightCyan), true, true));
 	menu.push(Button({0, 2}, "回退至启动时", "backtobeg", ButtonColor(consoleColor.brightCyan), true, true));
 	menu.push(Button({0, 3}, "保存并退出", "exit", ButtonColor(consoleColor.brightCyan), true, true));
@@ -209,7 +211,10 @@ bool change(Task &task, const string &event) {
 }
 
 int main(int n_, char** config_path_) {
-	IniManager ini_config("config.ini");
+	pathSplit(_pgmptr, self_path, self_name);
+	string ini_config_path = self_path + "\\config.ini";
+	pathDelete(ini_config_path);
+	IniManager ini_config(ini_config_path.c_str());
 
 	string config_path;
 	if (n_ == 1) config_path = ini_config["Autorun"]["default_profile"];
@@ -222,7 +227,7 @@ int main(int n_, char** config_path_) {
 	back_up.push_back(config);
 
 	Menu menu;
-	paintMenu(menu, config);
+	paintMenu(menu, config, config_path);
 	menu.start();
 	while (true) {
 		string event;
@@ -320,7 +325,7 @@ int main(int n_, char** config_path_) {
 			if (ischanged)
 				back_up.push_back(config);
 			editConfig(config_path, config.toJson());
-			paintMenu(menu, config);
+			paintMenu(menu, config, config_path);
 			system("cls");
 			menu.start();
 		}

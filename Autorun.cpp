@@ -157,7 +157,9 @@ void process(const Config &config) {
 int main(int n_, char** config_path_) {
 	pathSplit(_pgmptr, self_path, self_name);
 	HWND console = GetConsoleWindow();
-	IniManager ini_config("config.ini");
+	string ini_config_path = self_path + "\\config.ini";
+	pathDelete(ini_config_path);
+	IniManager ini_config(ini_config_path.c_str());
 
 	if (ini_config["Autorun"]["hide_console_window"] == "1")
 		ShowWindow(console, SW_HIDE);
